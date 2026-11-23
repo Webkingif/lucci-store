@@ -20,6 +20,7 @@ export function ProductCard({
   className,
 }: ProductCardProps) {
   const [image] = product.images;
+  const stock = getStockState(product);
 
   return (
     <article className={cn("group relative flex flex-col gap-4", className)}>
@@ -55,8 +56,12 @@ export function ProductCard({
         </h3>
         <p className="text-body text-muted">
           {formatPrice(product.price, product.currency)}
-          {getStockState(product).status === "sold-out" && (
-            <span> · Sold out</span>
+          {/* Same states and labels as the product page (getStockState). */}
+          {stock.status !== "in-stock" && (
+            <span className={cn(stock.status === "low-stock" && "text-ink")}>
+              {" · "}
+              {stock.label}
+            </span>
           )}
         </p>
       </div>
