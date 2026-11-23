@@ -1,7 +1,11 @@
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buyNow } from "@/app/(store)/products/[slug]/actions";
+import {
+  BuyNowButton,
+  CheckoutNotice,
+} from "@/components/product/checkout-controls";
 import { Eyebrow } from "@/components/ui/layout";
 import { collectionHref, getStockState } from "@/lib/catalog";
 import { services } from "@/lib/sample-data";
@@ -19,8 +23,8 @@ type ProductInfoProps = {
 };
 
 /**
- * Product details panel: category trail, name, price, stock state, the bag
- * action and collapsible details. Mirrors the card's hierarchy at a larger
+ * Product details panel: category trail, name, price, stock state, the Buy
+ * now action and collapsible details. Mirrors the card's hierarchy at a larger
  * scale: display serif for the name, quiet tracked labels for everything else.
  */
 export function ProductInfo({ product }: ProductInfoProps) {
@@ -72,10 +76,16 @@ export function ProductInfo({ product }: ProductInfoProps) {
         {product.description}
       </p>
 
-      {/* Placeholder: no cart exists yet. */}
-      <Button size="lg" fullWidth disabled={soldOut}>
-        {soldOut ? "Sold out" : "Add to bag"}
-      </Button>
+      <div className="flex flex-col gap-4">
+        <Suspense>
+          <CheckoutNotice />
+        </Suspense>
+        {/* Only the slug is sent; price and stock are read on the server. */}
+        <form action={buyNow}>
+          <input type="hidden" name="slug" value={product.slug} />
+          <BuyNowButton soldOut={soldOut} />
+        </form>
+      </div>
 
       <div className="border-b">
         <Disclosure title="Details" defaultOpen>

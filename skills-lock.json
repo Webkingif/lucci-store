@@ -15,12 +15,26 @@
       "skillPath": "skills/audit/SKILL.md",
       "computedHash": "2547dd1bb22e60048398153aceeb43f7fce3d8251c2d9627982c5cc4d887bb6a"
     },
+    "better-auth-best-practices": {
+      "source": "better-auth/skills",
+      "commit": "20c9e88a5c007461a703f1c213572b073196113e",
+      "sourceType": "github",
+      "skillPath": "better-auth/best-practices/SKILL.md",
+      "computedHash": "2773c3687f2cf96d659049ebf2d8c86058a33541b09360712df0dc6b1404c403"
+    },
     "check": {
       "source": "jsmastery-pro/skills",
       "commit": "43b69e44c9ca905fe3a3418ccdf4102255e20d40",
       "sourceType": "github",
       "skillPath": "skills/check/SKILL.md",
       "computedHash": "1ae945920ec8869c36e58bb73e4c44da8f5bdc7bc5b9dec6d035215f4ccda3d3"
+    },
+    "create-auth": {
+      "source": "better-auth/skills",
+      "commit": "20c9e88a5c007461a703f1c213572b073196113e",
+      "sourceType": "github",
+      "skillPath": "better-auth/create-auth/SKILL.md",
+      "computedHash": "6f68253a5ab812aa8c9b70c57609aca763093a594e3b07163142e0fa7d64904a"
     },
     "debug": {
       "source": "jsmastery-pro/skills",

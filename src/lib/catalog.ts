@@ -6,7 +6,8 @@
 // cacheComponents. Everything is tagged "products": after changing catalogue
 // data from inside the app, call revalidateTag("products").
 
-import { asc, count, desc, eq, ne, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ne, sql } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 import { db } from "@/db";
 import { categories, products } from "@/db/schema";
@@ -91,11 +92,20 @@ const productColumns = {
   categoryTitle: categories.title,
 };
 
-function selectProducts() {
+/** Only published products reach the storefront. */
+const isPublished = eq(products.published, true);
+
+/**
+ * Published products joined to their category. Pass extra conditions here
+ * rather than calling `.where()` on the result, which would drop the
+ * published filter.
+ */
+function selectProducts(...conditions: SQL[]) {
   return db
     .select(productColumns)
     .from(products)
     .innerJoin(categories, eq(products.categoryId, categories.id))
+    .where(and(isPublished, ...conditions))
     .$dynamic();
 }
 
@@ -141,7 +151,10 @@ export async function getCategories(): Promise<Category[]> {
       count: count(products.id),
     })
     .from(categories)
-    .leftJoin(products, eq(products.categoryId, categories.id))
+    .leftJoin(
+      products,
+      and(eq(products.categoryId, categories.id), isPublished),
+    )
     .groupBy(categories.id)
     .orderBy(asc(categories.position));
 }
@@ -159,8 +172,9 @@ export async function getProducts({
   "use cache";
   cacheCatalog();
 
-  let query = selectProducts().orderBy(...orderFor(sort));
-  if (categorySlug) query = query.where(eq(categories.slug, categorySlug));
+  let query = selectProducts(
+    ...(categorySlug ? [eq(categories.slug, categorySlug)] : []),
+  ).orderBy(...orderFor(sort));
   if (limit) query = query.limit(limit);
   return (await query).map(toProduct);
 }
@@ -183,7 +197,7 @@ export async function getProductBySlug(
   "use cache";
   cacheCatalog();
 
-  const [row] = await selectProducts().where(eq(products.slug, slug)).limit(1);
+  const [row] = await selectProducts(eq(products.slug, slug)).limit(1);
   return row ? toProduct(row) : undefined;
 }
 
@@ -192,7 +206,10 @@ export async function getProductSlugs(): Promise<string[]> {
   "use cache";
   cacheCatalog();
 
-  const rows = await db.select({ slug: products.slug }).from(products);
+  const rows = await db
+    .select({ slug: products.slug })
+    .from(products)
+    .where(isPublished);
   return rows.map((row) => row.slug);
 }
 
@@ -208,8 +225,7 @@ export async function getRelatedProducts(
   "use cache";
   cacheCatalog();
 
-  const rows = await selectProducts()
-    .where(ne(products.id, productId))
+  const rows = await selectProducts(ne(products.id, productId))
     .orderBy(
       desc(sql`${categories.slug} = ${categorySlug}`),
       asc(products.position),

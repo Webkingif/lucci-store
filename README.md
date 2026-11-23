@@ -20,6 +20,18 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Admin
+
+The admin area lives at `/admin` (products, stock, categories, read-only orders) behind one shared password. Add two variables to `.env`:
+
+```bash
+npx tsx scripts/hash-admin-password.ts "a long shared password"
+# ADMIN_PASSWORD_HASH=scrypt:...   (paste into .env)
+# ADMIN_SESSION_SECRET=...         (printed when not already set; 32+ chars)
+```
+
+Sessions last 8 hours. Signing out clears the cookie in that browser; to end every session at once, rotate `ADMIN_SESSION_SECRET`. Run `npm test` for the auth, validation and guard-coverage tests.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
