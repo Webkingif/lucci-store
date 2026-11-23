@@ -15,7 +15,8 @@
     "db:check": "drizzle-kit check",
     "db:seed": "tsx src/db/seed.ts",
     "db:studio": "drizzle-kit studio",
-    "test": "node --import tsx --test \"tests/**/*.test.ts\""
+    "test": "node --import tsx --test \"tests/admin/**/*.test.ts\"",
+    "test:db": "node --import tsx --test \"tests/db/**/*.test.ts\""
   },
   "dependencies": {
     "@neon/config": "^1.14.5",

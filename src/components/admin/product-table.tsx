@@ -1,12 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
-import { getStockState } from "@/lib/catalog";
-import { cn, formatPrice } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import type { AdminProduct } from "@/types";
 import { AdminTable, StatusTag } from "./admin-ui";
-import { StockForm } from "./stock-form";
+import { ProductThumb, StockTag } from "./product-bits";
 
-/** Every product with live stock and an inline stock editor per row. */
+/** Every product with its live stock. Stock is changed on /admin/inventory. */
 export function ProductTable({ products }: { products: AdminProduct[] }) {
   return (
     <AdminTable
@@ -22,70 +20,51 @@ export function ProductTable({ products }: { products: AdminProduct[] }) {
             Price
           </th>
           <th scope="col">Status</th>
-          <th scope="col">Stock</th>
+          <th scope="col" className="text-right">
+            Stock
+          </th>
         </>
       }
     >
-      {products.map((product) => {
-        const image = product.images[0];
-        const stock = getStockState(product);
-        return (
-          <tr key={product.id}>
-            <td>
-              <div className="relative h-16 w-12 overflow-hidden bg-surface">
-                {image && (
-                  <Image
-                    src={image.src}
-                    alt=""
-                    fill
-                    sizes="48px"
-                    className={cn(
-                      image.fit === "contain"
-                        ? "object-contain p-1 mix-blend-multiply"
-                        : "object-cover",
-                    )}
-                  />
-                )}
-              </div>
-            </td>
-            <td>
-              <Link
-                href={`/admin/products/${product.id}`}
-                className="font-medium link-reveal"
-              >
-                {product.name}
-              </Link>
-              <p className="text-caption text-muted">/{product.slug}</p>
-            </td>
-            <td className="text-muted">{product.category}</td>
-            <td className="text-right tabular-nums">
-              {formatPrice(product.price, product.currency)}
-            </td>
-            <td>
-              <div className="flex flex-wrap gap-2">
-                {product.published ? (
-                  <StatusTag>Published</StatusTag>
-                ) : (
-                  <StatusTag tone="muted">Hidden</StatusTag>
-                )}
-                {stock.status === "sold-out" && (
-                  <StatusTag tone="solid">Sold out</StatusTag>
-                )}
-                {stock.status === "low-stock" && (
-                  <StatusTag tone="muted">Low</StatusTag>
-                )}
-              </div>
-            </td>
-            <td>
-              <StockForm
-                productId={product.id}
-                productName={product.name}
-                stock={product.stock}
-              />
-            </td>
-          </tr>
-        );
-      })}
+      {products.map((product) => (
+        <tr key={product.id}>
+          <td>
+            <ProductThumb product={product} />
+          </td>
+          <td>
+            <Link
+              href={`/admin/products/${product.id}`}
+              className="font-medium link-reveal"
+            >
+              {product.name}
+            </Link>
+            <p className="text-caption text-muted">/{product.slug}</p>
+          </td>
+          <td className="text-muted">{product.category}</td>
+          <td className="text-right tabular-nums">
+            {formatPrice(product.price, product.currency)}
+          </td>
+          <td>
+            <div className="flex flex-wrap gap-2">
+              {product.published ? (
+                <StatusTag>Published</StatusTag>
+              ) : (
+                <StatusTag tone="muted">Hidden</StatusTag>
+              )}
+              <StockTag stock={product.stock} />
+            </div>
+          </td>
+          <td className="text-right">
+            <span className="tabular-nums">{product.stock}</span>
+            <Link
+              href="/admin/inventory"
+              className="ml-3 eyebrow text-muted link-reveal hover:text-ink"
+            >
+              Adjust
+            </Link>
+          </td>
+        </tr>
+      ))}
     </AdminTable>
   );
 }

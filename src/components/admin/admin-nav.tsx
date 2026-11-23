@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 
 export const adminLinks = [
   { label: "Products", href: "/admin/products" },
+  { label: "Inventory", href: "/admin/inventory" },
   { label: "Categories", href: "/admin/categories" },
   { label: "Orders", href: "/admin/orders" },
 ] as const;

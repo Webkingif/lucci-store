@@ -11,7 +11,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { initialFormState, type FormState } from "@/lib/admin/validation";
 
-type FormAction = (state: FormState, formData: FormData) => Promise<FormState>;
+type FormAction<S extends FormState> = (
+  state: S,
+  formData: FormData,
+) => Promise<S>;
 
 /**
  * useActionState for admin forms. Submits inside a transition from onSubmit
@@ -19,12 +22,22 @@ type FormAction = (state: FormState, formData: FormData) => Promise<FormState>;
  * after an action submit and the admin would lose their input on a
  * validation error. Without JavaScript the native `action` still works.
  */
-export function useAdminForm(action: FormAction) {
-  const [state, formAction, pending] = useActionState(action, initialFormState);
+export function useAdminForm<S extends FormState = FormState>(
+  action: FormAction<S>,
+  initialState: S = initialFormState as S,
+) {
+  // S is a plain object type, so Awaited<S> is S; TypeScript can't prove it
+  // for a generic, hence the casts.
+  const [state, formAction, pending] = useActionState<S, FormData>(
+    action as (state: Awaited<S>, payload: FormData) => Promise<S>,
+    initialState as Awaited<S>,
+  );
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    // Include the pressed button's name/value, as a native submit would.
+    const submitter = (event.nativeEvent as SubmitEvent).submitter;
+    const formData = new FormData(event.currentTarget, submitter);
     startTransition(() => formAction(formData));
   }
 

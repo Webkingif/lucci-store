@@ -15,11 +15,12 @@
 // idempotency key, so replays and concurrent calls are safe.
 
 import "server-only";
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import type Stripe from "stripe";
 import { db } from "@/db";
 import { getTxDb } from "@/db/pool";
+import { restoreStock, takeStock } from "@/db/stock";
 import { orders, products, stripeEvents } from "@/db/schema";
 import { CATALOG_CACHE_TAG } from "@/lib/catalog";
 import { getSiteUrl, getStripe } from "@/lib/stripe";
@@ -131,7 +132,8 @@ export async function createCheckout(slug: string): Promise<CheckoutResult> {
     .set({ stripeCheckoutSessionId: session.id })
     .where(eq(orders.id, order.id));
 
-  if (!session.url) throw new Error(`Checkout Session ${session.id} has no URL`);
+  if (!session.url)
+    throw new Error(`Checkout Session ${session.id} has no URL`);
   return { status: "redirect", url: session.url };
 }
 
@@ -205,27 +207,18 @@ export async function fulfillCheckout(
     }
 
     // Atomic: only succeeds while enough stock remains.
-    const taken = await tx
-      .update(products)
-      .set({ stock: sql`${products.stock} - ${locked.quantity}` })
-      .where(
-        and(
-          eq(products.id, locked.productId),
-          gte(products.stock, locked.quantity),
-        ),
-      )
-      .returning({ id: products.id });
+    const taken = await takeStock(tx, locked.productId, locked.quantity);
 
     const [updated] = await tx
       .update(orders)
       .set(
-        taken.length > 0
+        taken
           ? { ...details, status: "authorized" }
           : { ...details, status: "canceled", cancelReason: "out_of_stock" },
       )
       .where(eq(orders.id, orderId))
       .returning();
-    return { order: updated, stockChanged: taken.length > 0 };
+    return { order: updated, stockChanged: taken };
   });
 
   if (stockChanged) revalidateStock();
@@ -240,7 +233,8 @@ export async function fulfillCheckout(
 /** Capture an authorized order's payment and mark it paid. */
 async function captureOrder(order: OrderRow) {
   const paymentIntentId = order.stripePaymentIntentId;
-  if (!paymentIntentId) throw new Error(`Order ${order.id} has no PaymentIntent`);
+  if (!paymentIntentId)
+    throw new Error(`Order ${order.id} has no PaymentIntent`);
 
   const stripe = getStripe();
   let paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
@@ -310,10 +304,7 @@ async function cancelAuthorizedOrder(
       .for("update");
     if (!locked || locked.status !== "authorized") return false;
 
-    await tx
-      .update(products)
-      .set({ stock: sql`${products.stock} + ${locked.quantity}` })
-      .where(eq(products.id, locked.productId));
+    await restoreStock(tx, locked.productId, locked.quantity);
     await tx
       .update(orders)
       .set({ status: "canceled", cancelReason: reason })

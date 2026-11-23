@@ -26,6 +26,7 @@ Admin boundaries for this version: one shared admin login (no per person account
 | 6 | Edit product | Slice 2 | planned |
 | 7 | Manage categories | Slice 3 | planned |
 | 8 | View orders | Slice 4 | planned |
+| 9 | Inventory management | Slice 5 | in-progress |
 
 ## Already built
 
@@ -92,12 +93,22 @@ A read only order list filterable by status, plus an order detail view (product 
 **Done when:** an admin finds any order by status and opens its detail; amounts use `formatPrice()`; nothing on these screens changes an order; refunds stay in the Stripe Dashboard.
 - [ ] Design it (spec): `/architect view orders`
 
+## Slice 5: Inventory
+
+### 9. Inventory management · in-progress
+`/admin/inventory`: live stock lowest first, Low and Sold out filters, add/remove units atomically (never conflicts with a sale) and a conflict-checked "set to". Keeps the single `products.stock` count; no history table. All stock SQL lives in `src/db/stock.ts`, shared with checkout.
+**Done when:** adjustments show on the storefront immediately; stock can't go below zero or be overwritten by a stale "set"; `npm run test:db` passes on a Neon branch; the seed no longer resets live stock.
+code in `src/app/admin/(panel)/inventory/`, `src/lib/admin/inventory.ts`, `src/db/stock.ts`
+
 ## Deferred
 Out of scope for this version, kept so the plan stays honest.
 - **Per person admin accounts**: individual logins and an audit of who changed what · needs a decision · GA
 - **Image uploads**: upload files instead of pasting URLs · needs a decision
 - **Refund and cancel from admin**: payment actions in the store · needs a decision · GA
-- **Stock change history**: a log of manual stock edits · needs a decision
+- **Stock change history**: a log of manual stock edits and sales · needs a decision
+- **Restock refunded orders**: refunds don't return stock today · needs a decision
+- **Reserve stock for pending checkouts**: two buyers can both authorize the last unit; the later one is canceled unpaid · needs a decision
+- **Per-product low-stock thresholds and bulk import** · needs a decision
 - **Dashboards and analytics**: excluded on purpose for now
 - **Login rate limiting**: v1 only delays failed attempts · needs a decision
 - **Server-side session revocation**: v1 sessions are stateless (8h); sign out clears the browser cookie, rotating `ADMIN_SESSION_SECRET` ends all sessions · needs a decision

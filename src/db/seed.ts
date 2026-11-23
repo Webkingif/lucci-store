@@ -1,6 +1,6 @@
 // Seed categories and products: `npm run db:seed`.
 // Idempotent: rows are upserted on `slug`, so it is safe to rerun after edits
-// to seed-data.ts. Runs outside Next, so it uses createDb() rather than the
+// to seed-data.ts (existing products keep their live stock). Runs outside Next, so it uses createDb() rather than the
 // server-only `db` export.
 
 import { loadEnvConfig } from "@next/env";
@@ -50,10 +50,16 @@ async function main() {
       position,
       createdAt: createdAtFor(product.slug, position),
     };
+    // Stock is only seeded for new products: rerunning the seed must never
+    // reset live stock (sales and admin adjustments).
+    // (Drizzle skips undefined keys in `set`.)
     await db
       .insert(products)
       .values(values)
-      .onConflictDoUpdate({ target: products.slug, set: values });
+      .onConflictDoUpdate({
+        target: products.slug,
+        set: { ...values, stock: undefined },
+      });
   }
 
   console.log(

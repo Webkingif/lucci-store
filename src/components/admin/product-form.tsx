@@ -34,7 +34,7 @@ function toSlug(value: string) {
 
 /**
  * Create and edit form. Stock is set here only on create; existing products
- * change stock through the conflict-checked StockForm on the product list.
+ * change stock on /admin/inventory, which never overwrites a sale.
  */
 export function ProductForm({
   action,
@@ -214,9 +214,9 @@ export function ProductForm({
             <p className="eyebrow text-muted">Stock</p>
             <p className="tabular-nums">{product.stock}</p>
             <p className="text-caption text-muted">
-              Change stock from the{" "}
-              <Link href="/admin/products" className="link">
-                product list
+              Change stock in{" "}
+              <Link href="/admin/inventory" className="link">
+                Inventory
               </Link>
               .
             </p>

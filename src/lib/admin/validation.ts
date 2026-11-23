@@ -251,3 +251,63 @@ export function parseId(raw: unknown): number | undefined {
   const id = Number(raw);
   return id > 0 ? id : undefined;
 }
+
+// Inventory
+
+/** State of a stock form; `stock` is the latest count the server saw. */
+export type StockFormState = FormState & { stock?: number };
+
+export type StockAdjustment =
+  | { id: number; mode: "adjust"; delta: number }
+  | { id: number; mode: "set"; expected: number; stock: number };
+
+/**
+ * Parse an inventory form. `adjust` adds or removes a positive `amount`
+ * (direction comes from the button pressed); `set` replaces the count only
+ * if it still equals `expected`.
+ */
+export function parseStockAdjustment(form: FormData): Parsed<StockAdjustment> {
+  const id = parseId(form.get("id"));
+  if (!id)
+    return { ok: false, errors: { form: "Reload the page and try again." } };
+
+  const mode = form.get("mode");
+  if (mode === "adjust") {
+    const direction = form.get("direction");
+    if (direction !== "add" && direction !== "remove") {
+      return { ok: false, errors: { form: "Choose add or remove." } };
+    }
+    const amount = parseStock(form.get("amount"));
+    if (amount === undefined || amount === 0) {
+      return {
+        ok: false,
+        errors: {
+          amount: `Enter a whole number from 1 to ${MAX_STOCK.toLocaleString("en-US")}.`,
+        },
+      };
+    }
+    return {
+      ok: true,
+      data: { id, mode, delta: direction === "add" ? amount : -amount },
+    };
+  }
+
+  if (mode === "set") {
+    const expected = parseStock(form.get("expected"));
+    if (expected === undefined) {
+      return { ok: false, errors: { form: "Reload the page and try again." } };
+    }
+    const stock = parseStock(form.get("stock"));
+    if (stock === undefined) {
+      return {
+        ok: false,
+        errors: {
+          stock: `Enter a whole number from 0 to ${MAX_STOCK.toLocaleString("en-US")}.`,
+        },
+      };
+    }
+    return { ok: true, data: { id, mode, expected, stock } };
+  }
+
+  return { ok: false, errors: { form: "Reload the page and try again." } };
+}

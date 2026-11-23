@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getStockState } from "@/lib/catalog";
 import type { Product } from "@/types";
 import { cn, formatPrice } from "@/lib/utils";
 
@@ -54,7 +55,9 @@ export function ProductCard({
         </h3>
         <p className="text-body text-muted">
           {formatPrice(product.price, product.currency)}
-          {product.stock <= 0 && <span> · Sold out</span>}
+          {getStockState(product).status === "sold-out" && (
+            <span> · Sold out</span>
+          )}
         </p>
       </div>
     </article>

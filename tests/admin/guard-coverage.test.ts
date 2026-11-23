@@ -13,6 +13,15 @@ const root = join(import.meta.dirname, "..", "..");
 /** Exports allowed to run without a session. */
 const PUBLIC_EXPORTS = new Set(["src/app/admin/login/actions.ts#signIn"]);
 
+const UNGUARDED_MODULES = new Set([
+  "auth.ts",
+  "session.ts",
+  "token.ts",
+  "password.ts",
+  "validation.ts",
+  "db-errors.ts",
+]);
+
 function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
@@ -24,9 +33,11 @@ const guardedFiles = [
   ...walk(join(root, "src/app/admin")).filter((path) =>
     path.endsWith("actions.ts"),
   ),
-  ...["products.ts", "categories.ts", "orders.ts"].map((name) =>
-    join(root, "src/lib/admin", name),
-  ),
+  // Every admin data module, so new ones are checked automatically. Only the
+  // auth plumbing and pure helpers (no data access) are exempt.
+  ...readdirSync(join(root, "src/lib/admin"))
+    .filter((name) => name.endsWith(".ts") && !UNGUARDED_MODULES.has(name))
+    .map((name) => join(root, "src/lib/admin", name)),
 ];
 
 function isRequireAdminCall(statement: ts.Statement | undefined) {
@@ -42,7 +53,7 @@ function isRequireAdminCall(statement: ts.Statement | undefined) {
 describe("admin guard coverage", () => {
   it("finds the admin action and data files", () => {
     assert.ok(
-      guardedFiles.length >= 7,
+      guardedFiles.length >= 9,
       `only found ${guardedFiles.length} files`,
     );
   });

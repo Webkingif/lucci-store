@@ -3,9 +3,10 @@
 // Callers (Server Actions) refresh the storefront with updateTag afterwards.
 
 import "server-only";
-import { and, asc, eq } from "drizzle-orm";
+import { asc, between, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { categories, products } from "@/db/schema";
+import { LOW_STOCK_THRESHOLD } from "@/lib/catalog";
 import type { AdminProduct } from "@/types";
 import { requireAdmin } from "./auth";
 import { isForeignKeyViolation, isUniqueViolation } from "./db-errors";
@@ -64,6 +65,25 @@ export async function listAdminProducts(): Promise<AdminProduct[]> {
     asc(products.position),
     asc(products.name),
   );
+  return rows.map(toAdminProduct);
+}
+
+export type InventoryFilter = "all" | "low" | "out";
+
+/**
+ * Products for the inventory screen, lowest stock first. `low` matches the
+ * storefront's "Only N left" range; `out` is sold out.
+ */
+export async function listInventory(
+  filter: InventoryFilter = "all",
+): Promise<AdminProduct[]> {
+  await requireAdmin();
+  let query = selectAdminProducts();
+  if (filter === "out") query = query.where(eq(products.stock, 0));
+  if (filter === "low") {
+    query = query.where(between(products.stock, 1, LOW_STOCK_THRESHOLD));
+  }
+  const rows = await query.orderBy(asc(products.stock), asc(products.name));
   return rows.map(toAdminProduct);
 }
 
@@ -130,36 +150,4 @@ export async function updateProduct(
   } catch (error) {
     return writeError(error);
   }
-}
-
-export type StockResult =
-  | { status: "updated"; stock: number }
-  | { status: "conflict"; stock: number }
-  | { status: "not-found" };
-
-/**
- * Set stock only if it still equals what the admin saw. A checkout that took
- * stock in between makes this a conflict instead of a silent overwrite.
- */
-export async function setStock(
-  id: number,
-  expected: number,
-  next: number,
-): Promise<StockResult> {
-  await requireAdmin();
-  const [updated] = await db
-    .update(products)
-    .set({ stock: next })
-    .where(and(eq(products.id, id), eq(products.stock, expected)))
-    .returning({ stock: products.stock });
-  if (updated) return { status: "updated", stock: updated.stock };
-
-  const [current] = await db
-    .select({ stock: products.stock })
-    .from(products)
-    .where(eq(products.id, id))
-    .limit(1);
-  return current
-    ? { status: "conflict", stock: current.stock }
-    : { status: "not-found" };
 }

@@ -237,7 +237,7 @@ export async function getRelatedProducts(
 // Stock
 
 /** At or below this many units, show a low-stock note. */
-const LOW_STOCK_THRESHOLD = 3;
+export const LOW_STOCK_THRESHOLD = 3;
 
 export type StockState = {
   status: "in-stock" | "low-stock" | "sold-out";
