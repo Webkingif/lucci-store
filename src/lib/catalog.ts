@@ -70,6 +70,11 @@ export function catalogHref({
   return query ? `/products?${query}` : "/products";
 }
 
+/** A category's collection landing page. */
+export function collectionHref(categorySlug: string) {
+  return `/collections/${categorySlug}`;
+}
+
 // Queries
 
 const productColumns = {

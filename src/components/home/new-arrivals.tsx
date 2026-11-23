@@ -18,7 +18,7 @@ export function NewArrivals({ image, products }: NewArrivalsProps) {
       <SectionHeading
         id="new-arrivals-title"
         title="New arrivals"
-        action={{ label: "View all", href: "/products" }}
+        action={{ label: "View all", href: "/new-arrivals" }}
       />
       <div className="grid grid-cols-2 gap-x-1 gap-y-10 lg:grid-cols-4">
         <div className="relative col-span-2 aspect-4/5 bg-surface sm:aspect-3/2 lg:row-span-2 lg:aspect-auto">

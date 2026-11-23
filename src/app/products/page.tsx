@@ -6,7 +6,7 @@ import {
   ProductGrid,
   ProductGridSkeleton,
 } from "@/components/product/product-grid";
-import { Eyebrow } from "@/components/ui/layout";
+import { PageIntro } from "@/components/ui/layout";
 import { getCategories, getProducts, parseCatalogQuery } from "@/lib/catalog";
 
 export const metadata: Metadata = {
@@ -35,7 +35,8 @@ async function Listing({
 
   return (
     <>
-      <Intro
+      <PageIntro
+        eyebrow="Shop"
         title={category?.title ?? "All products"}
         description={
           category?.description ??
@@ -55,7 +56,8 @@ async function Listing({
 function ListingSkeleton() {
   return (
     <div aria-busy>
-      <Intro
+      <PageIntro
+        eyebrow="Shop"
         title={<span className="invisible">Loading</span>}
         description={<span className="invisible">Loading products</span>}
       />
@@ -64,30 +66,6 @@ function ListingSkeleton() {
         <ProductGridSkeleton />
       </ListingBody>
     </div>
-  );
-}
-
-type IntroProps = {
-  title: ReactNode;
-  description: ReactNode;
-  meta?: string;
-};
-
-/** Page title block: modest headline with the result count aligned to the end. */
-function Intro({ title, description, meta }: IntroProps) {
-  return (
-    <header className="container-page flex flex-col gap-4 pt-10 pb-8 sm:flex-row sm:items-end sm:justify-between lg:pt-16 lg:pb-10">
-      <div className="flex flex-col gap-3">
-        <Eyebrow className="text-muted">Shop</Eyebrow>
-        <h1 className="font-display text-headline">{title}</h1>
-        <p className="max-w-prose text-muted">{description}</p>
-      </div>
-      {meta && (
-        <p className="shrink-0 eyebrow text-muted" aria-live="polite">
-          {meta}
-        </p>
-      )}
-    </header>
   );
 }
 

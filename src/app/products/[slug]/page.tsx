@@ -6,7 +6,7 @@ import { ProductRail } from "@/components/home/product-rail";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductInfo } from "@/components/product/product-info";
 import {
-  catalogHref,
+  collectionHref,
   getProductBySlug,
   getProductSlugs,
   getRelatedProducts,
@@ -57,7 +57,7 @@ async function ProductDetail({
         eyebrow="You may also like"
         title={`More ${product.category.toLowerCase()}`}
         products={related}
-        viewAllHref={catalogHref({ category: product.categorySlug })}
+        viewAllHref={collectionHref(product.categorySlug)}
       />
     </>
   );

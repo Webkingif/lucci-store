@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/layout";
-import { catalogHref, getStockState } from "@/lib/catalog";
+import { collectionHref, getStockState } from "@/lib/catalog";
 import { services } from "@/lib/sample-data";
 import { cn, formatPrice } from "@/lib/utils";
 import type { Product } from "@/types";
@@ -41,7 +41,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
               <li aria-hidden>/</li>
               <li>
                 <Link
-                  href={catalogHref({ category: product.categorySlug })}
+                  href={collectionHref(product.categorySlug)}
                   className="link-reveal hover:text-ink"
                 >
                   {product.category}

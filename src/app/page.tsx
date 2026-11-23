@@ -4,7 +4,7 @@ import { Hero } from "@/components/home/hero";
 import { NewArrivals } from "@/components/home/new-arrivals";
 import { ProductRail } from "@/components/home/product-rail";
 import { Services } from "@/components/home/services";
-import { catalogHref, getNewArrivals, getProducts } from "@/lib/catalog";
+import { collectionHref, getNewArrivals, getProducts } from "@/lib/catalog";
 import {
   categories,
   featureImage,
@@ -34,7 +34,7 @@ export default async function HomePage() {
         eyebrow="Featured collection"
         title="The outerwear edit"
         products={outerwear}
-        viewAllHref={catalogHref({ category: "outerwear" })}
+        viewAllHref={collectionHref("outerwear")}
       />
 
       <Services items={services} />

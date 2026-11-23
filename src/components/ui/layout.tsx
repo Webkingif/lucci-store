@@ -37,6 +37,37 @@ export function Eyebrow({ className, ...props }: ComponentProps<"p">) {
   return <p className={cn("eyebrow", className)} {...props} />;
 }
 
+type PageIntroProps = {
+  eyebrow: string;
+  title: ReactNode;
+  description: ReactNode;
+  /** Short trailing note, e.g. a result count. */
+  meta?: string;
+};
+
+/** Page title block: modest headline with optional meta aligned to the end. */
+export function PageIntro({
+  eyebrow,
+  title,
+  description,
+  meta,
+}: PageIntroProps) {
+  return (
+    <header className="container-page flex flex-col gap-4 pt-10 pb-8 sm:flex-row sm:items-end sm:justify-between lg:pt-16 lg:pb-10">
+      <div className="flex flex-col gap-3">
+        <Eyebrow className="text-muted">{eyebrow}</Eyebrow>
+        <h1 className="font-display text-headline">{title}</h1>
+        <p className="max-w-prose text-muted">{description}</p>
+      </div>
+      {meta && (
+        <p className="shrink-0 eyebrow text-muted" aria-live="polite">
+          {meta}
+        </p>
+      )}
+    </header>
+  );
+}
+
 type SectionHeadingProps = {
   id?: string;
   eyebrow?: string;
