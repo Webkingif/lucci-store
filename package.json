@@ -14,7 +14,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:check": "drizzle-kit check",
     "db:seed": "tsx src/db/seed.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "test": "node --import tsx --test \"tests/admin/**/*.test.ts\"",
+    "test:db": "node --import tsx --test \"tests/db/**/*.test.ts\""
   },
   "dependencies": {
     "@neon/config": "^1.14.5",
@@ -27,6 +29,7 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "^0.0.1",
+    "stripe": "^23.2.0",
     "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {

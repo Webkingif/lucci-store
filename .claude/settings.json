@@ -1,23 +1,27 @@
 {
     "permissions": {
-        "allow":[
-            "Bash(pnpm build)",
-            "Bash(pnpm test *)",
-            "Bash(pnpm typecheck)",
+        "allow": [
+            "Bash(npm install *)",
+            "Bash(npm run build)",
+            "Bash(npm run typecheck)",
+            "Bash(npm run lint)",
+            "Bash(npm run db:generate)",
+            "Bash(npm run db:check)",
             "Bash(git status)",
             "Bash(git diff *)",
-            "Bash(npm install *)"
+            "Read(./node_modules/**)"
         ],
-        "ask":[
+        "ask": [
+            "Bash(npm run db:migrate)",
+            "Bash(npm run db:seed)",
             "Bash(git push *)"
         ],
-        "deny":[
+        "deny": [
             "Read(.env)",
             "Read(.env.*)",
             "Edit(.env)",
             "Edit(.env.*)",
-            "Read(./.next/**)",
-            "Read(./node_modules/**)"
+            "Read(./.next/**)"
         ]
     }
 }
